@@ -1,129 +1,127 @@
 package project3;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
+import java.io.IOException;
+import java.lang.Object;
+
 
 abstract class LLC {
 	public static int DESTINATION_ADDRESS_INDEX = 0;
 	public static int SOURCE_ADDRESS_INDEX = 6;
 	public static int PDU_INDEX = 12;
-	public static int DATA_PADDING_INDEX = 14;
+	public static int SAP_INDEX = 14;
 	public static int CONTROL_INDEX = 16;
 	
+	public static int IS_ERROR = 0;
+	public static int IS_IFRAME = 1;
+	public static int IS_SFRAME = 2;
+	public static int IS_UFRAME = 3;
 	
-	int MAX_PACKET_SIZE = 518;
+	
+	int MAX_PACKET_SIZE = 516;
 	
 	public byte data[] = new byte[MAX_PACKET_SIZE];
 	ByteBuffer buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
+	
+	// 컨트롤 코드 사이즈.
+	protected int control_size = 2;
 	
 	public LLC(){
 
 	}
 	
-	public byte[] get_bytes(){
+	// 패킷을 가져오는 부분.
+	public byte[] getData(){
 		return data;
 	}
 	
-}
-
-// 채팅 메시지.
-class IFrame extends LLC {
-	// 메시지가 들어갈 위치.
-	private int information_index = 18;
-	private int sequence;
-	
-	public IFrame(String message, int _sequence){
-		
-		// 1. PDU set (2bytes -> short)
-		buffer.putShort(super.PDU_INDEX, (short)(information_index + message.length() + 4));
-				
-		// 2. Control 설정.
-		_sequence %= 128;	// 128 이상 되면 안됨...
-		// 시퀀스 설정.
-		sequence = _sequence;
-		// N(S) 설정.(MSB 포함 1byte, MSB는 무조건 0)
-		buffer.put(super.CONTROL_INDEX, (byte)_sequence);
-		
-		// N(R) 은 무조건 0이므로 무시.
-		
-		// 3. 메시지 삽입.
-		// 바이트 값으로 변경한 메시지를 임시로 저장하는 바이트배열..
-		byte[] message_bytes = message.getBytes();
-		// 위치에 값 추가.
-		buffer.put(message_bytes, information_index, message.length());
-		
-				
-		// TODO: 4. CRC set
-		
-		
-		
-		data = buffer.array();
+	// 패킷을 인스턴스에 저장
+	public void setData(byte[] bytes){
+		this.data = bytes;
 	}
-}
-
-// ACK/NACK
-class SFrame extends LLC {
-	public static int RR = 1;
-	public static int RNR = 2;
-	public static int REJECT = 3;
 	
-	private int sequence;
-	
-	public SFrame(int code, int _sequence){
-		// 시퀀스 설정.
-		sequence = _sequence;
+	// 패킷의 크기.
+	public static int getDataSize(byte[] bytes){
+		// PDU부분을 읽는다.
+		byte[] pdu_tmp = new byte[2];
+		System.arraycopy(bytes, PDU_INDEX, pdu_tmp, 0, 2);
+		ByteBuffer wrapped = ByteBuffer.wrap(pdu_tmp);
 		
-		// 1. PDU 설정
-		// 고정 -> 6(dest address) + 6(source address) + 2(PDU) + 4(SAP:2+control:2) + 3(CRC)
-		buffer.putShort(super.PDU_INDEX, (short)21);
-			
-		// 2. control 설정.
-		//SS 설정.
-		switch (code) {
-		case 1:
-			buffer.put(super.CONTROL_INDEX, (byte)0x80);
-			break;
-		case 2:
-			buffer.put(super.CONTROL_INDEX, (byte)0xA0);
-			break;
-		case 3:
-			buffer.put(super.CONTROL_INDEX, (byte)0x90);
-			break;
-		default:
-			// 이외의 경우에는 NACK 처리.
-			buffer.put(super.CONTROL_INDEX, (byte)0x90);
-			break;
+		return wrapped.getShort();
+	}
+	
+	public static long getCRC32Value(byte[] bytes) {
+		 
+		Checksum checksum = new CRC32();
+		
+		// update the current checksum with the specified array of bytes
+		checksum.update(bytes, 0, bytes.length);
+		
+		long checksumValue = checksum.getValue(); 
+//		System.out.println("CRC32 checksum for input string is: " + checksumValue);
+		
+		// get the current checksum value
+		return checksumValue;
+		
+	}
+	
+	// CRC 체크 메소드.
+	// 전체를 다 받는다.
+	public static boolean checkCRC(byte[] bytes){
+		int total_size = getDataSize(bytes);
+		int target_size = total_size - 4;
+		
+		// crc 검증 부분을 임시로 담아둘 바이트배열.
+		byte[] target_byte = new byte[target_size];
+		System.arraycopy(bytes, 0, target_byte, 0, target_size);
+		
+		// 해당 데이터의 crc를 저장할 바이트배열.
+		byte[] target_crc = new byte[4];
+		// 해당 데이터의 crc를 가져온다.
+		System.arraycopy(bytes, target_size, target_crc, 0, 4);
+		
+		// 해당 데이터의 crc 결과값을 가져올 바이트버퍼 공간.
+		ByteBuffer crc_buffer = ByteBuffer.allocate(4);
+		crc_buffer.putInt((int)getCRC32Value(target_byte));
+		
+		// 결과 crc를 담아둘 바이트배열.
+		byte[] result_crc = crc_buffer.array();
+		
+		// 두 crc가 같으면 true
+		if (Arrays.equals(target_crc, result_crc)){
+			return true;
+		} else {
+			return false;
 		}
 		
-		// N(R)설정.
-		buffer.put(super.CONTROL_INDEX + 1, (byte)sequence);
-		
-		// 3. TODO: CRC 설정 
-		
 	}
+	// 디버깅용 패킷 출력 메소드.
+	public abstract String byteArrayToHex();
+	
+	// 패킷 타입 판단 메소드.
+	public static int whichFrame(byte[] bytes){
+		// Control 바이트의 MSB를 일단 확인.
+		int msb = (bytes[CONTROL_INDEX] & 0xff) >> 7;
+		if(msb == 0){
+			return IS_IFRAME;
+		} else if (msb == 1){
+			int msb2 = (bytes[CONTROL_INDEX] & 0xff) >> 6;
+			if(msb2 == 2){
+				return IS_SFRAME;
+			} else if(msb2 == 3) {
+				return IS_UFRAME;
+			} else {
+				return IS_ERROR;
+			}
+		} else {
+			return IS_ERROR;
+		}
+	}
+
 }
 
-// 연결.
-class UFrame extends LLC {
-	public static int SABME = 1;
-	public static int UA = 2;
-	
-	public UFrame(int code){
-		// 1. PDU 설정
-		// 고정 -> 6(dest address) + 6(source address) + 2(PDU) + 3(SAP:2+control:1) + 3(CRC) = 20
-		buffer.putShort(super.PDU_INDEX, (short)20);
-		
-		// 2. Control 설정.
-		switch (code) {
-		case 1:	// SABME(11110110)
-			buffer.put(super.CONTROL_INDEX, (byte)0xF6);
-			break;
-		case 2:	// UA(11000110)
-			buffer.put(super.CONTROL_INDEX, (byte)0xC6);
-			break;
-		default:
-			break;
-		}
-		
-		// 3. TODO: CRC 설정
-	}
-}
+
+
