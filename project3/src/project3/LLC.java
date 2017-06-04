@@ -21,7 +21,7 @@ abstract class LLC {
 	public static int IS_UFRAME = 3;
 	
 	
-	int MAX_PACKET_SIZE = 516;
+	public static int MAX_PACKET_SIZE = 518;
 	
 	public byte data[] = new byte[MAX_PACKET_SIZE];
 	ByteBuffer buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);

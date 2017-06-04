@@ -65,6 +65,10 @@ public class SFrame extends LLC {
 			return UNKNOWN;
 		}
 	}
+	
+	public int extractSequence(){
+		return data[CONTROL_INDEX + 1];
+	}
 
 	@Override
 	public String byteArrayToHex() {

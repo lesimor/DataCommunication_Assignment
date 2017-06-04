@@ -38,15 +38,15 @@ public class IFrame extends LLC {
 		data = Arrays.copyOfRange(data, 0, INFORMATION_INDEX + message.length());
 		
 		// TODO: data를 앞부분만 짤라서 crc에 넣어야한다.
-		System.out.println("원래 body size: " + data.length);
+//		System.out.println("원래 body size: " + data.length);
 		
-		/////////////////////
-		StringBuilder sb = new StringBuilder();
-		System.out.println("검사 대상 data: ");
-	    for(final byte b: data)
-	        sb.append(String.format("%02x ", b&0xff));
-	    System.out.println(sb);
-	    System.out.println((int)LLC.getCRC32Value(data));
+//		/////////////////////
+//		StringBuilder sb = new StringBuilder();
+//		System.out.println("검사 대상 data: ");
+//	    for(final byte b: data)
+//	        sb.append(String.format("%02x ", b&0xff));
+//	    System.out.println(sb);
+//	    System.out.println((int)LLC.getCRC32Value(data));
  	/////////////////////
 		// TODO: 4. CRC set
 		// CRC앞까지의 바이트 길이

@@ -16,6 +16,7 @@ public class TestZone {
 	      
 	      //CRC 체크
 	      if(LLC.checkCRC(test_bytes)){
+	    	  System.out.println("CRC check pass!!");
 	    	  if (LLC.whichFrame(test_bytes) == LLC.IS_IFRAME){
 	    		  System.out.println("I Frame입니다.");
 	    		  IFrame i_frame = new IFrame();	// I프레임 객체 생성.
