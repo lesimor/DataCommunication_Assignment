@@ -1,5 +1,8 @@
 package project3;
 
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
+
 public class TestZone {
 
 	public static void main(String[] args) {
@@ -45,7 +48,15 @@ public class TestZone {
 	      } else {
 	    	  System.out.println("패킷 손상...");
 	      }
-
-	}
+//	      System.out.println("-----------------");
+//	      IFrame i_frame = new IFrame();	// I프레임 객체 생성.
+//		  i_frame.setData(test_bytes);		// 객체에 바이트배열 입력.
+//		  System.out.println(i_frame.byteArrayToHex());
+//		  
+//		  Checksum checksum = new CRC32();
+//		  checksum.update(i_frame.getData());
+//		  System.out.println(i_frame.byteArrayToHex());
+		  
+	}	
 
 }
