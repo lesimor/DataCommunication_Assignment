@@ -53,10 +53,9 @@ class UDPStopAndWaitServer{
           			try {        		  		
     		            Random random = new Random( );
     		            int chance = random.nextInt( 100 );
-
+    		            System.out.println("클라이언트로부터의 메시지: " + message + "(시퀀스No." + sequence + ")");
     	  	            // 절반의 확률로 응답을 해준다.
     	  	            if( ((chance % 2) == 0) ){
-    	  	            	System.out.println("클라이언트로부터의 메시지: " + message);
 
     	  	            	// ACK 초기화.
     	  	            	dataForSend = new SFrame(SFrame.RR, sequence).getData();
@@ -64,6 +63,7 @@ class UDPStopAndWaitServer{
     	  	            	// 클라이언트에게 패킷을 전송.
     	  	            	DatagramPacket packet = new DatagramPacket( dataForSend, dataForSend.length, IPAddress, port );
     	  	            	serverSocket.send( packet ); 
+    	  	            	System.out.println("클라이언트에게 ACK를 보냅니다.");
     	  	            } else {
     	  	            	// 절반의 확률로 아무것도 응답해주지 않는다. 의도적으로 타임아웃 발생.
     	  	            	System.err.println("타임아웃을 발생시키기 위해 아무것도 하지 않습니다.");
@@ -76,6 +76,7 @@ class UDPStopAndWaitServer{
 	  	            	// 클라이언트에게 패킷을 전송.
 	  	            	DatagramPacket packet = new DatagramPacket( dataForSend, dataForSend.length, IPAddress, port );
 	  	            	serverSocket.send( packet );
+	  	            	System.out.println("클라이언트에게 NACK를 보냅니다.");
 					}
   	    		  	
   		      } else if (LLC.whichFrame(received.getData()) == LLC.IS_SFRAME){

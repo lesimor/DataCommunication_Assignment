@@ -74,21 +74,22 @@ class UDPStopAndWaitClient{
 			// 서버로부터 ACK가 오면 타임아웃을 false로 바꿔서 루프문에서 빠져나오도록.
 			boolean timedOut = true;
 			
+			String msg = "";
 			// accept가 되기 전까지는 메시지를 전송하지 않음.
 			while( timedOut && accept){
 				
 				client_sequence++;
 				
-				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-				// 입력이 들어온 경우 메시지를 전송한다.
-                
-				// 보낼 메시지를 IFrame에 실어서 초기화 후 바이트 배열로 변환..
-				// TODO: 전송 실패하면 입력 다시 받는 문제 해결해야댐.
-				String msg = in.readLine();
+				if (msg == ""){
+					System.out.print("메시지 입력: ");
+					BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+					msg = in.readLine();
+				}
+				
 
 				sendData = new IFrame(msg, client_sequence).getData();
 				
-				System.out.println( "메시지: "+ msg + "(시퀀스 No." + client_sequence + ")" );
+				System.out.println( "전송 메시지: "+ msg + "(시퀀스 No." + client_sequence + ")" );
 
 				try{
 					// UDP 패킷을 서버에 전송.
@@ -110,6 +111,8 @@ class UDPStopAndWaitClient{
 						System.out.println( "서버로부터 ACK 도착(시퀀스 No." + server_sequence + ")");
 						// 서버로부터 ACK를 수신하면 루프문에서 탈출.
 						timedOut = false;
+						// 메시지 초기화.
+						msg = "";
 					} else {
 						throw new Exception();
 					}
