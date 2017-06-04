@@ -6,11 +6,21 @@ import java.nio.*;
 
 class UDPStopAndWaitClient{
 	private static final int BUFFER_SIZE = LLC.MAX_PACKET_SIZE;
-	private static final int PORT = 6789;
-	private static final String HOSTNAME = "localhost";
 	private static final int BASE_SEQUENCE_NUMBER = 0;
 
-    public static void main(String args[]) throws Exception{
+    public static void main(String args[]) throws Exception{	
+    	// 포트번호.
+		int PORT;
+		String HOSTNAME;
+    	try {	
+    		HOSTNAME = args[0];
+    		PORT = Integer.parseInt(args[1]);
+    	} catch(Exception e){
+    		HOSTNAME= "localhost";
+    		PORT = 5678;
+    		System.out.println("[에러발생]디폴트 포트 5678으로 설정됩니다.");
+    	}
+    	
    		// 소켓 생성.
 		DatagramSocket socket = new DatagramSocket();
 		
@@ -32,8 +42,6 @@ class UDPStopAndWaitClient{
 		
 		// counter -> 전송 시도 횟수.
 		for (int counter = 0; counter < 200; counter++) {
-			// 128이 넘으면 안됨.
-			client_sequence %= 128;
 			
 			// U frame 전송 시도.
 			if(!accept){
@@ -41,7 +49,7 @@ class UDPStopAndWaitClient{
 				try{
 					// Send the UDP Packet to the server
 					System.out.println("서버에게 SABME U-frame을 전송합니다.");
-					DatagramPacket packet = new DatagramPacket(sendData, sendData.length, IPAddress, 6789);
+					DatagramPacket packet = new DatagramPacket(sendData, sendData.length, IPAddress, PORT);
 					socket.send( packet );
 
 					// Receive the server's packet
@@ -68,17 +76,19 @@ class UDPStopAndWaitClient{
 			
 			// accept가 되기 전까지는 메시지를 전송하지 않음.
 			while( timedOut && accept){
+				
 				client_sequence++;
-								
+				
 				// 보낼 메시지를 IFrame에 실어서 초기화 후 바이트 배열로 변환..
 				String msg = "Hello world!";
+
 				sendData = new IFrame(msg, client_sequence).getData();
 				
 				System.out.println( "메시지: "+ msg + "(시퀀스 No." + client_sequence + ")" );
 
 				try{
 					// UDP 패킷을 서버에 전송.
-					DatagramPacket packet = new DatagramPacket(sendData, sendData.length, IPAddress, 6789);
+					DatagramPacket packet = new DatagramPacket(sendData, sendData.length, IPAddress, PORT);
 					socket.send( packet );
 
 					// 서버로부터 패킷을 받는다.
@@ -91,16 +101,18 @@ class UDPStopAndWaitClient{
 					// 서버로부터 온 패킷의 시퀀스 번호를 확인한다.
 					int server_sequence = receive_s.extractSequence();
 					
-					// 보낸 패킷과 도착한 패킷의 시퀀스 번호가 같은지 확인.
-					if(receive_s.extractCode() == SFrame.RR && client_sequence == server_sequence){
+					// 보낸 패킷과 도착한 패킷의 시퀀스 번호가 같은지 확인. + CRC 체크.
+					if(receive_s.extractCode() == SFrame.RR && client_sequence == server_sequence && LLC.checkCRC(received.getData())){
 						System.out.println( "서버로부터 ACK 도착(시퀀스 No." + server_sequence + ")");
 						// 서버로부터 ACK를 수신하면 루프문에서 탈출.
 						timedOut = false;
+					} else {
+						throw new Exception();
 					}
 					
-				} catch( SocketTimeoutException exception ){
+				} catch( Exception exception ){
 					// 서버로부터 ACK를 수신하지 못하면 재전송.
-					System.out.println( "타임아웃 발생ㅠㅠ(시퀀스 No." + client_sequence + " 재전송)" );
+					System.out.println( "에러 발생ㅠㅠ(시퀀스 No." + client_sequence + " 재전송)" );
 					client_sequence--;
 				}
 			}	
