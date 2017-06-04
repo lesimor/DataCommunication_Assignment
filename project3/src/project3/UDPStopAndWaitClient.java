@@ -79,8 +79,12 @@ class UDPStopAndWaitClient{
 				
 				client_sequence++;
 				
+				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+				// 입력이 들어온 경우 메시지를 전송한다.
+                
 				// 보낼 메시지를 IFrame에 실어서 초기화 후 바이트 배열로 변환..
-				String msg = "Hello world!";
+				// TODO: 전송 실패하면 입력 다시 받는 문제 해결해야댐.
+				String msg = in.readLine();
 
 				sendData = new IFrame(msg, client_sequence).getData();
 				

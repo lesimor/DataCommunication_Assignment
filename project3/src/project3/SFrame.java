@@ -44,7 +44,7 @@ public class SFrame extends LLC {
 		
 		// 3. CRC 설정 
 		data = buffer.array();
-		data = Arrays.copyOfRange(data, 0, CONTROL_INDEX + 2 + 4);
+		data = Arrays.copyOfRange(data, 0, CONTROL_INDEX + 2);
 		
 		// CRC앞까지의 바이트 길이
 		buffer.putInt(super.CONTROL_INDEX + 2, (int)LLC.getCRC32Value(data));

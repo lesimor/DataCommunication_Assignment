@@ -38,7 +38,7 @@ public class IFrame extends LLC {
 		// CRC앞까지의 바이트 길이
 		data = buffer.array();
 		// 크기에 맞게 자르기
-		data = Arrays.copyOfRange(data, 0, INFORMATION_INDEX + message.length() + 4);
+		data = Arrays.copyOfRange(data, 0, INFORMATION_INDEX + message.length());
 		buffer.putInt((int)LLC.getCRC32Value(data));
 		
 		// 버퍼 위치 재설정.

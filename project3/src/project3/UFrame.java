@@ -31,7 +31,7 @@ public class UFrame extends LLC {
 		
 		// 3. CRC 설정
 		data = buffer.array();
-		data = Arrays.copyOfRange(data, 0, CONTROL_INDEX + control_size + 4);
+		data = Arrays.copyOfRange(data, 0, CONTROL_INDEX + control_size);
 		// CRC앞까지의 바이트 길이
 		buffer.putInt(super.CONTROL_INDEX + control_size, (int)LLC.getCRC32Value(data));
 		

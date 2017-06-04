@@ -72,7 +72,7 @@ abstract class LLC {
 	// 전체를 다 받는다.
 	public static boolean checkCRC(byte[] bytes){
 		int total_size = getDataSize(bytes);
-		int target_size = total_size;
+		int target_size = total_size - 4;
 		
 		// crc 검증 부분을 임시로 담아둘 바이트배열.
 		byte[] target_byte = new byte[target_size];
@@ -81,14 +81,10 @@ abstract class LLC {
 		// 해당 데이터의 crc를 저장할 바이트배열.
 		byte[] target_crc = new byte[4];
 		// 해당 데이터의 crc를 가져온다.
-		System.arraycopy(bytes, target_size - 4, target_crc, 0, 4);
+		System.arraycopy(bytes, target_size, target_crc, 0, 4);
 		
 		// 해당 데이터의 crc 결과값을 가져올 바이트버퍼 공간.
 		ByteBuffer crc_buffer = ByteBuffer.allocate(4);
-		// 하위 4자리를 0으로 바꾼다.
-		for(int i = 0; i < 4 ; i++){
-			target_byte[total_size-i-1] = (byte)0x00;
-		}
 		crc_buffer.putInt((int)getCRC32Value(target_byte));
 		
 		// 결과 crc를 담아둘 바이트배열.
