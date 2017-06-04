@@ -66,6 +66,7 @@ class UDPStopAndWaitServer{
     	  	            	serverSocket.send( packet ); 
     	  	            } else {
     	  	            	// 절반의 확률로 아무것도 응답해주지 않는다. 의도적으로 타임아웃 발생.
+    	  	            	System.err.println("타임아웃을 발생시키기 위해 아무것도 하지 않습니다.");
     	  	            }
 					} catch (Exception e) {
 						// 에러 발생시 NACK 발생.
