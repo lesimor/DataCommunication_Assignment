@@ -56,7 +56,6 @@ class UDPStopAndWaitServer{
     		            System.out.println("클라이언트로부터의 메시지: " + message + "(시퀀스No." + sequence + ")");
     	  	            // 절반의 확률로 응답을 해준다.
     	  	            if( ((chance % 2) == 0) ){
-
     	  	            	// ACK 초기화.
     	  	            	dataForSend = new SFrame(SFrame.RR, sequence).getData();
     	
@@ -99,6 +98,7 @@ class UDPStopAndWaitServer{
   		    		  // UA 패킷 생성.
   		    		  dataForSend = new UFrame(UFrame.UA).getData();
   		    		  // 클라이언트에게 전송,
+  		    		  System.out.println("클라이언트에게 UA패킷을 응답합니다.");
   		    		  DatagramPacket packet = new DatagramPacket( dataForSend, dataForSend.length, IPAddress, port );
   		    		  serverSocket.send( packet ); 
   		    	  }

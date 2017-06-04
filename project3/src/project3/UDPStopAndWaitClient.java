@@ -29,6 +29,9 @@ class UDPStopAndWaitClient{
 
 		// 시퀀스 번호.
 		Integer client_sequence = BASE_SEQUENCE_NUMBER;
+		// 최대 시도 횟수
+		int MAX_TRY = 5;
+		int try_num;
 
 		// 송신 데이터와 수신 데이터를 담을 바이트 배열 초기화.
 		byte[] sendData = new byte[ BUFFER_SIZE ];
@@ -40,9 +43,10 @@ class UDPStopAndWaitClient{
 		// UA가 온 이후에 true로 변경.
 		boolean accept = false;
 		
-		// counter -> 전송 시도 횟수.
+		// counter -> 최대 전송 시도 횟수.
 		for (int counter = 0; counter < 200; counter++) {
-			
+			// 시도 횟수 초기화.
+			try_num = 0;
 			// U frame 전송 시도.
 			if(!accept){
 				sendData = new UFrame(UFrame.SABME).getData();
@@ -75,9 +79,11 @@ class UDPStopAndWaitClient{
 			boolean timedOut = true;
 			
 			String msg = "";
+			
 			// accept가 되기 전까지는 메시지를 전송하지 않음.
 			while( timedOut && accept){
-				
+				// 시도횟수 1 증가.
+				try_num++;
 				client_sequence++;
 				
 				if (msg == ""){
@@ -118,9 +124,18 @@ class UDPStopAndWaitClient{
 					}
 					
 				} catch( Exception exception ){
-					// 서버로부터 ACK를 수신하지 못하면 재전송.
-					System.out.println( "에러 발생ㅠㅠ(시퀀스 No." + client_sequence + " 재전송)" );
-					client_sequence--;
+					if(try_num < MAX_TRY){
+						// 서버로부터 ACK를 수신하지 못하면 재전송.
+						System.out.println( "에러 발생ㅠㅠ(시퀀스 No." + client_sequence + " 재전송)" );
+						client_sequence--;
+					} else {
+						System.out.println("최대 시도 횟수 초과. 메시지를 다시 입력받습니다. ");
+						// 서버로부터 ACK를 수신하면 루프문에서 탈출.
+						timedOut = false;
+						// 메시지 초기화.
+						msg = "";
+					}
+					
 				}
 			}	
 		}
