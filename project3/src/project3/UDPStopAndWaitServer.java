@@ -20,6 +20,7 @@ class UDPStopAndWaitServer{
     		System.out.println("[에러발생]디폴트 포트 5678으로 설정됩니다.");
     	}
     	
+    	System.out.println("IP_Address : " + InetAddress.getLocalHost().getHostAddress() + "| Port : " + PORT);
 		// 서버 소켓 생성.
 		DatagramSocket serverSocket = new DatagramSocket( PORT );
 
@@ -57,6 +58,7 @@ class UDPStopAndWaitServer{
     	  	            // 절반의 확률로 응답을 해준다.
     	  	            if( ((chance % 2) == 0) ){
     	  	            	// ACK 초기화.
+    	  	            	sequence++;	// 시퀀스 번호를 1 증가시킨다.
     	  	            	dataForSend = new SFrame(SFrame.RR, sequence).getData();
     	
     	  	            	// 클라이언트에게 패킷을 전송.

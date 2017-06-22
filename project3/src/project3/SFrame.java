@@ -95,7 +95,7 @@ public class SFrame extends LLC {
 			}
 	    	sb.append(String.format("%02x ", data[i]&0xff));
 	    }
-	        
+        sb.append("[총 길이: " + this.getDataSize(data) + "]");
 	    return sb.toString();
 	}
 }

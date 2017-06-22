@@ -8,8 +8,8 @@ public class TestZone {
 	public static void main(String[] args) {
 		
 	      // 송신측 인스턴스 초기화 방법.(셋중에 하나씩만 테스트할 것)
-		   IFrame test_frame = new IFrame("hello world!!", 3);
-//		   SFrame test_frame = new SFrame(SFrame.RR, 55);
+//		   IFrame test_frame = new IFrame("hello world!!", 3);
+		   SFrame test_frame = new SFrame(SFrame.RR, 55);
 //	      UFrame test_frame = new UFrame(UFrame.SABME);
 
 	      // 인스턴스에서 데이터 부분을 뽑아냄...

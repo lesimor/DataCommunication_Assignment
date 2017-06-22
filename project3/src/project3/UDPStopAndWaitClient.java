@@ -84,7 +84,7 @@ class UDPStopAndWaitClient{
 			while( timedOut && accept){
 				// 시도횟수 1 증가.
 				try_num++;
-				client_sequence++;
+				
 				
 				if (msg == ""){
 					System.out.print("메시지 입력: ");
@@ -101,7 +101,9 @@ class UDPStopAndWaitClient{
 					// UDP 패킷을 서버에 전송.
 					DatagramPacket packet = new DatagramPacket(sendData, sendData.length, IPAddress, PORT);
 					socket.send( packet );
-
+					
+					client_sequence++;
+					
 					// 서버로부터 패킷을 받는다.
 					DatagramPacket received = new DatagramPacket(receiveData, receiveData.length);
 					socket.receive( received );
@@ -112,14 +114,30 @@ class UDPStopAndWaitClient{
 					// 서버로부터 온 패킷의 시퀀스 번호를 확인한다.
 					int server_sequence = receive_s.extractSequence();
 					
+					System.out.println("---------수신 패킷---------");
+					System.out.println(receive_s.byteArrayToHex());
+					System.out.println("------------------------");
+					
+					 if(!LLC.checkCRC(received.getData())){
+						 System.out.println("CRC error!!");
+					 }
+					 
+					 // && LLC.checkCRC(received.getData())
+					 
 					// 보낸 패킷과 도착한 패킷의 시퀀스 번호가 같은지 확인. + CRC 체크.
-					if(receive_s.extractCode() == SFrame.RR && client_sequence == server_sequence && LLC.checkCRC(received.getData())){
+					if(receive_s.extractCode() == SFrame.RR && client_sequence == server_sequence){
 						System.out.println( "서버로부터 ACK 도착(시퀀스 No." + server_sequence + ")");
 						// 서버로부터 ACK를 수신하면 루프문에서 탈출.
 						timedOut = false;
 						// 메시지 초기화.
 						msg = "";
 					} else {
+						if(receive_s.extractCode() != SFrame.RR){
+							System.out.println("ACK가 아닙니다.");
+						}
+						if(client_sequence != server_sequence){
+							System.out.println("시퀀스 번호가 맞지 않습니다. ");
+						}
 						throw new Exception();
 					}
 					
